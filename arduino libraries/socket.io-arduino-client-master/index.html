@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="http://207.242.203.160/ui/hue/web/js/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="http://207.242.203.160/ui/hue/web/js/jd-utils.js"></script>
+    <script src="http://207.242.203.160/socket.io/socket.io.js"></script>
+    <title>ad-hoc network creation</title>
+</head>
+<body>
+<div id="container">
+    <div id="venue-list">
+
+    </div>
+    <div id="subscriber-list">
+
+    </div>
+</div>
+</body>
+<script>
+
+    var subscriberId = "shenanigans";
+    var venueId = "foundry";
+    var server = "207.242.203.160";
+    var subscribers = [];
+    var venues = [];
+
+    // override above vars from querystring params
+    if (queryString()["subscriberId"] != undefined) {
+        subscriberId = queryString()["subscriberId"].replace("#", "");
+    }
+    if (queryString()["venueId"] != undefined) {
+        venueId = queryString()["venueId"].replace("#", "");
+    }
+
+    // socket.io connection
+    socket = io.connect('http://' + server + '/');
+    // identify self
+    socket.emit('subscriberId', subscriberId);
+    // join a venue
+    socket.emit('venueId', venueId);
+
+    // handle message to me
+    socket.on(subscriberId, function(message) {
+        console.log("message from " + message.from + " to " + message.to + ": " + message.payload.title);
+        console.log("raw:");
+        console.log(message);
+    });
+
+    // handle message to venue
+    socket.on(venueId, function(message) {
+        console.log("message from " + message.from + " to " + message.to + ": " + message.payload.title);
+        console.log("raw:");
+        console.log(message);
+
+        if (message != undefined && message.payload.action != undefined) {
+            var action = message.payload.action;
+            if (action == "join") {
+                //getVenues();
+                //getSubscribers();
+            }
+        }
+    });
+
+    // send message to venue
+    function sendToVenue() {
+        var message = {};
+        message.from = subscriberId;
+        message.to = venueId;
+        message.payload = { "title": "oh hai!" }; // arbitrary object
+        socket.emit(venueId, message);
+    }
+
+    // send message to a subscriber
+    function sendToSubscriber() {
+        var toSubscriberId = "fred";
+        var message = {};
+        message.from = subscriberId;
+        message.to = toSubscriberId;
+        message.payload = { "title": toSubscriberId + ", you suck" }; // arbitrary object
+        socket.emit("private", message);
+    }
+
+
+    $(function() {
+        //setTimeout(getSubscribers, 200);
+        //setTimeout(getVenues, 200);
+    });
+
+   /* function getVenues() {
+        $.get("http://" + server + "/" + subscriberId + "/" + venueId + "/venues", function(data) {
+            if (data != undefined) {
+                for (var i = 0; i < data.length; i++) {
+                    if (venues.indexOf(i) == -1) {
+                        venues.push(i);
+                        $("#venue-list").append(data[i] + "<br/>");
+                    }
+                }
+            }
+        })
+    }
+
+    function getSubscribers() {
+        $.get("http://" + server + "/" + subscriberId + "/" + venueId + "/subscribers", function(data) {
+            if (data != undefined) {
+                for (var i = 0; i < data.length; i++) {
+                    if (subscribers.indexOf(data[i].subscriberId) == -1) {
+                        subscribers.push(data[i].subscriberId);
+                        $("#subscriber-list").append(data[i].subscriberId + "<br/>");
+                    }
+                }
+            }
+        })
+    }*/
+
+</script>
+</html>
