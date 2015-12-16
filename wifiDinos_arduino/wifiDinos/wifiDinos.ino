@@ -23,7 +23,7 @@ void loop() {
   
   // capacitive
   long start = millis();
-  long total = cs_4.6.capacitiveSensor(30);
+  long total = cs_4_6.capacitiveSensor(30);
   Serial.print(millis()-start);
   Serial.print("\t");
   Serial.println(total);
